@@ -1,0 +1,5 @@
+name = Views RSS: Google Field Trip
+description = "Integrates Drupal RSS with custom elements required by Google Field Trip"
+package = Views
+dependencies[] = views_rss
+core = 7.x

@@ -1,0 +1,132 @@
+<?php
+
+// Some background on expanding Views RSS is at 
+// http://www.phase2technology.com/blog/your-guide-to-extending-rss-feeds-in-drupal/
+// https://drupal.org/node/1346506
+// 
+
+/**
+ * Module installation path.
+ */
+define('VIEWS_RSS_FIELDTRIP_PATH', drupal_get_path('module', 'views_rss_fieldtrip'));
+
+/**
+ * Include file with field formatters.
+ */
+include_once VIEWS_RSS_FIELDTRIP_PATH .'/views_rss_fieldtrip.field.inc';
+
+
+/**
+ * Include file with all preprocess functions.
+ */
+include_once VIEWS_RSS_FIELDTRIP_PATH .'/views_rss_fieldtrip.inc';
+
+/**
+ * Implements hook_views_rss_namespaces().
+ */
+function views_rss_fieldtrip_views_rss_namespaces() {
+  
+  // we need xmlns:georss="http://www.georss.org/georss"
+  $namespaces['georss'] = array(
+    'prefix' => 'xmlns',
+    'uri' => 'http://www.georss.org/georss',
+  );
+
+  // we need xmlns:fieldtrip="http://www.fieldtripper.com/fieldtrip_rss"
+  $namespaces['fieldtrip'] = array(
+    'prefix' => 'xmlns',
+    'uri' => 'http://www.fieldtripper.com/fieldtrip_rss',
+  );
+
+  return $namespaces;
+}
+
+
+/**
+ * Implements hook_views_rss_channel_elements().
+ */
+/* 
+// Field trip does not currently call for any channel elements
+function views_rss_fieldtrip_views_rss_channel_elements() {
+  $elements['example:publisher_id'] = array(
+    'title' => t(‘Publisher ID for this vendor’),
+    'description' => t(‘Provides the publisher ID for the vendor for some reason’),
+  );
+  return $elements;
+}
+*/
+
+/**
+ * Implements hook_views_rss_item_elements().
+ */
+function views_rss_fieldtrip_views_rss_item_elements() {
+  $elements['fieldtrip:address'] = array(
+    'title' => t('Address field'),
+    'description' => t('Format: 1487 Golden Gate Bridge, Mill Valley, CA 94941. ZIP is optional.'),
+  );
+
+  $elements['fieldtrip:image'] = array(
+    'title' => t('Image field'),
+    'description' => t('Image item.'),
+    'preprocess functions' => array('views_rss_fieldtrip_preprocess_item_image'),
+  );
+
+  $elements['fieldtrip:image_title'] = array(
+    'title' => t('Image title'),
+    'description' => t('Image title.'),
+    'preprocess functions' => array('views_rss_fieldtrip_preprocess_item_image_title'),
+  );
+
+  $elements['fieldtrip:image_attribution'] = array(
+    'title' => t('Image attribution'),
+    'description' => t('Image attribution.'),
+    'preprocess functions' => array('views_rss_fieldtrip_preprocess_item_image_attribution'),
+  );
+
+  /*
+
+  $elements['fieldtrip:image:url'] = array(
+    'title' => t('Image for this item'),
+    'description' => t('Image URL.'),
+  );
+
+  $elements['fieldtrip:image:title'] = array(
+    'title' => t('Image title or caption'),
+    'description' => t('Should pass text.'),
+  );
+
+  $elements['fieldtrip:image:attribution'] = array(
+    'title' => t('Image attribution or credit'),
+    'description' => t('Should pass text.'),
+  );
+
+  */
+
+  return $elements;
+}
+
+
+/**
+ * Implements hook_views_pre_build ()
+ *
+ * To support offset=0&limit=50
+ * This could use a GUI to specify which views it should affect.
+ */
+function views_rss_fieldtrip_views_pre_build(&$view) {
+  if($view->name == "fieldtrip") {
+    $view->items_per_page = 1;
+    $view->offset = 1;
+
+    $user_limit = filter_input(INPUT_GET, 'limit', FILTER_SANITIZE_SPECIAL_CHARS);
+    $user_offset = filter_input(INPUT_GET, 'offset', FILTER_SANITIZE_SPECIAL_CHARS);
+
+    if ($user_limit > 0) {
+      $view->items_per_page = $user_limit;
+    }
+
+    if ($user_offset > 0) {
+      $view->offset = $user_offset;
+    }
+
+  }
+}

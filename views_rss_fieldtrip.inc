@@ -13,6 +13,7 @@ function views_rss_fieldtrip_preprocess_item_image(&$variables) {
   if (empty($variables['elements'][0]['value'])) {
     return;
   }
+
   if (!empty($variables['raw'])) {
     $value = array();
     foreach ($variables['raw'] as $delta => $element) {
@@ -20,6 +21,14 @@ function views_rss_fieldtrip_preprocess_item_image(&$variables) {
         $value[] = $element['rendered']['#rss_element'];
       }
     }
+    /** possible grouping support
+    if (count($variables['raw']) > 1 && isset($variables['raw'][0]['rendered']['#settings']['group_multiple_values']) && $variables['raw'][0]['rendered']['#settings']['group_multiple_values']) {
+      $value = array(array(
+        'key' => 'media:group',
+        'value' => $value,
+      ));
+    }
+    **/
     $variables['elements'] = $value;
   }
 }
